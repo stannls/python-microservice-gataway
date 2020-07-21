@@ -1,7 +1,7 @@
 import websockets
 import asyncio
 import json
-from endpoint import microservice
+from modules.endpoint import microservice
 
 microservices = {}
 
