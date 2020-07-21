@@ -1,8 +1,9 @@
-import websockets
 import asyncio
 import json
 import logging
-from modules.endpoint import microservice
+
+import websockets
+from modules.endpoint import Microservice
 
 microservices = {}
 logging.basicConfig(level=logging.INFO)
@@ -12,32 +13,31 @@ async def hello(websocket, path):
     request = await websocket.recv()
     logging.debug("Handling request...")
     logging.debug("Request content: " + request)
-    requestObject = json.loads(request)
-    if requestObject["endpoint"] == "register":
-        microservices[requestObject["data"]["name"]] = microservice(name=requestObject["data"]["name"],
-                                                                    description=requestObject["data"]["description"],
-                                                                    endpoints=requestObject["data"]["endpoints"])
+    request_object = json.loads(request)
+    if request_object["endpoint"] == "register":
+        microservices[request_object["data"]["name"]] = Microservice(name=request_object["data"]["name"],
+                                                                     description=request_object["data"]["description"],
+                                                                     endpoints=request_object["data"]["endpoints"])
         await websocket.send(json.dumps({"code": 200}))
-        logging.info("Registered new microservice " + requestObject["data"]["name"])
+        logging.info("Registered new microservice " + request_object["data"]["name"])
         while True:
-            if microservices[requestObject["data"]["name"]].checkQueue():
-                await websocket.send(json.dumps(microservices[requestObject["data"]["name"]].executeQueue()))
+            if microservices[request_object["data"]["name"]].check_queue():
+                await websocket.send(json.dumps(microservices[request_object["data"]["name"]].execute_queue()))
                 response = json.loads(await websocket.recv())
                 print(response["data"]["greeting"])
-                microservices[requestObject["data"]["name"]].enterQueueResponse(response["data"]["greeting"])
-            else:
-                pass
+                microservices[request_object["data"]["name"]].enter_queue_response(response["data"]["greeting"])
             await asyncio.sleep(0.5)
-    elif requestObject["name"] == microservices[requestObject["name"]].name and \
-            microservices[requestObject["name"]].endpoints[requestObject["endpoint"]].name == requestObject["endpoint"]:
+    elif request_object["name"] == microservices[request_object["name"]].name and \
+            microservices[request_object["name"]].endpoints[request_object["endpoint"]].name == request_object[
+        "endpoint"]:
         logging.debug("New client got registered")
-        microservices[requestObject["name"]].appendQueue(endpoint=requestObject["endpoint"],
-                                                         parameters=requestObject["data"])
-        while not microservices[requestObject["name"]].checkQueueResponse():
+        microservices[request_object["name"]].append_queue(endpoint=request_object["endpoint"],
+                                                           parameters=request_object["data"])
+        while not microservices[request_object["name"]].check_queue_response():
             await asyncio.sleep(0.5)
         logging.debug("Sending client response")
-        await websocket.send(microservices[requestObject["name"]].showQueueResponse())
-        microservices[requestObject["name"]].deleteQueueEntry()
+        await websocket.send(microservices[request_object["name"]].show_queue_response())
+        microservices[request_object["name"]].delete_queue_entry()
     else:
         await websocket.send(json.dumps({"code": 400}))
         logging.debug("Got bad request")
