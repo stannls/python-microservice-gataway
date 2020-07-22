@@ -1,3 +1,6 @@
+import uuid
+
+
 class Microservice:
     def __init__(self, name, description, endpoints):
         self.description = description
@@ -10,12 +13,15 @@ class Microservice:
                                                             parameters=endpoints[i]["parameters"])
 
     def append_queue(self, endpoint, parameters):
+        queueID = uuid.uuid4().hex
         self.queue.append({
+            "uuid": queueID,
             "request": {
                 "endpoint": endpoint,
                 "parameters": parameters
             }
         })
+        return queueID
 
     def check_queue(self):
         if self.queue:
@@ -32,18 +38,23 @@ class Microservice:
     def enter_queue_response(self, response, position=0):
         self.queue[position]["response"] = response
 
-    def check_queue_response(self, position=0):
+    def check_queue_response(self, position):
         try:
             self.queue[position]["response"]
         except KeyError:
             return False
         return True
 
-    def show_queue_response(self, position=0):
+    def show_queue_response(self, position):
         return self.queue[position]["response"]
 
-    def delete_queue_entry(self, position=0):
+    def delete_queue_entry(self, position):
         self.queue.pop(position)
+
+    def showQueuePosition(self, uuid):
+        for i in range(len(self.queue)):
+            if self.queue[i]["uuid"] == uuid:
+                return i
 
 
 class Endpoint:

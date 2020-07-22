@@ -28,13 +28,13 @@ async def server(websocket, path):
             microservices[request_object["name"]].endpoints[request_object["endpoint"]].name == request_object[
         "endpoint"]:
         logging.debug("New client got registered")
-        microservices[request_object["name"]].append_queue(endpoint=request_object["endpoint"],
+        queueID = microservices[request_object["name"]].append_queue(endpoint=request_object["endpoint"],
                                                            parameters=request_object["data"])
-        while not microservices[request_object["name"]].check_queue_response():
+        while not microservices[request_object["name"]].check_queue_response(position=microservices[request_object["name"]].showQueuePosition(queueID)):
             await asyncio.sleep(0.5)
         logging.debug("Sending client response")
-        await websocket.send(microservices[request_object["name"]].show_queue_response())
-        microservices[request_object["name"]].delete_queue_entry()
+        await websocket.send(microservices[request_object["name"]].show_queue_response(position=microservices[request_object["name"]].showQueuePosition(queueID)))
+        microservices[request_object["name"]].delete_queue_entry(position=microservices[request_object["name"]].showQueuePosition(queueID))
     else:
         await websocket.send(json.dumps({"code": 400}))
         logging.debug("Got bad request")
