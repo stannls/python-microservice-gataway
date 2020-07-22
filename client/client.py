@@ -16,8 +16,9 @@ async def hello():
         await websocket.send(request)
         print(request)
 
-        greeting = await websocket.recv()
-        print(f"< {greeting}")
+        while True:
+            greeting = await websocket.recv()
+            print(f"< {greeting}")
 
 asyncio.get_event_loop().run_until_complete(hello())
 asyncio.get_event_loop().run_forever()

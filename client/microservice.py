@@ -1,6 +1,7 @@
 import asyncio
 import websockets
 import json
+import datetime
 
 
 async def hello():
@@ -37,14 +38,16 @@ async def hello():
             request = json.loads(await websocket.recv())
             print(request)
             if request["endpoint"] == "hello":
-                response = json.dumps({
-                    "code": 200,
-                    "data": {
-                        "greeting": "Hello " + request["data"]["user"] + "!"
-                    }
-                })
-                print(response)
-                await websocket.send(response)
+                while True:
+                    response = json.dumps({
+                        "code": 200,
+                        "data": {
+                            "greeting": "Hello " + request["data"]["user"] + "!" + str(datetime.datetime.now())
+                        }
+                    })
+                    print(response)
+                    await websocket.send(response)
+                    await asyncio.sleep(1)
 
 
 asyncio.get_event_loop().run_until_complete(hello())
