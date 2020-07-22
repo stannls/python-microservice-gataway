@@ -15,7 +15,7 @@ async def server(websocket, path):
         microservices[request_object["data"]["name"]] = Microservice(name=request_object["data"]["name"],
                                                                      description=request_object["data"]["description"],
                                                                      endpoints=request_object["data"]["endpoints"])
-        await websocket.send(json.dumps({"code": 200}))
+        await websocket.send(json.dumps({"code": 200, "connected": True}))
         logging.info("Registered new microservice " + request_object["data"]["name"])
         while True:
             if microservices[request_object["data"]["name"]].check_queue():
