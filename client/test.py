@@ -9,7 +9,7 @@ async def hello():
             "name": "test",
             "endpoint": "hello",
             "data": {
-                "user": "test"
+                "user": "imatest"
             }
         })
 

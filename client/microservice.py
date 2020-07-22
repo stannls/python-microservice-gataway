@@ -1,51 +1,58 @@
-import asyncio
-import websockets
+import datetime
 import json
+import time
+import _thread as thread
+import websocket
+
+isConnected = False
 
 
-async def hello():
-    uri = "ws://localhost:8000"
-    async with websockets.connect(uri) as websocket:
-        request = json.dumps({
-            "endpoint": "register",
-            "data": {
-                "name": "test",
-                "description": "A test microservice",
-                "endpoints": [
-                    {
-                        "name": "hello",
-                        "description": "says hello",
-                        "parameters": [
-                            {
-                                "name": "user",
-                                "description": "The user to say hello",
-                                "optional": False,
-                                "type": "string"
-                            }
-                        ]
-                    }
-                ]
-            }})
+def on_open(ws):
+    register = json.dumps({
+        "endpoint": "register",
+        "data": {
+            "name": "test",
+            "description": "A test microservice",
+            "endpoints": [
+                {
+                    "name": "hello",
+                    "description": "says hello",
+                    "parameters": [
+                        {
+                            "name": "user",
+                            "description": "The user to say hello",
+                            "optional": False,
+                            "type": "string"
+                        }
+                    ]
+                }
+            ]
+        }})
+    ws.send(register)
 
-        await websocket.send(request)
-        print(request)
 
-        greeting = await websocket.recv()
-        print(f"< {greeting}")
-
-        while True:
-            request = json.loads(await websocket.recv())
-            print(request)
-            if request["endpoint"] == "hello":
+def on_message(ws, message):
+    global isConnected
+    request = json.loads(message)
+    print(request)
+    if not isConnected and request["code"] == 200 and request["connected"] == True:
+        isConnected = True
+    elif request["endpoint"] == "hello":
+        def run():
+            while True:
                 response = json.dumps({
                     "code": 200,
+                    "uuid": request["uuid"],
                     "data": {
-                        "greeting": "Hello " + request["data"]["user"] + "!"
+                        "greeting": "Hello " + request["data"]["user"] + "!" + str(datetime.datetime.now())
                     }
                 })
                 print(response)
-                await websocket.send(response)
+                ws.send(response)
+                time.sleep(1)
+        thread.start_new_thread(run, ())
 
 
-asyncio.get_event_loop().run_until_complete(hello())
-asyncio.get_event_loop().run_forever()
+ws = websocket.WebSocketApp("ws://localhost:8000", on_message=on_message)
+ws.on_open = on_open
+ws.run_forever()
