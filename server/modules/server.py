@@ -19,11 +19,17 @@ async def server(websocket, path):
         logging.info("Registered new microservice " + request_object["data"]["name"])
         while True:
             if microservices[request_object["data"]["name"]].check_queue():
+                queueLen = 0
                 await websocket.send(json.dumps(microservices[request_object["data"]["name"]].execute_queue()))
                 while microservices[request_object["data"]["name"]].check_queue():
+                    if queueLen != len(microservices[request_object["data"]["name"]].queue):
+                        for i in range(len(microservices[request_object["data"]["name"]].queue)):
+                            if not microservices[request_object["data"]["name"]].queue[i]["send"]:
+                                await websocket.send(json.dumps(microservices[request_object["data"]["name"]].execute_queue(position=i)))
+                                logging.info("Added client")
                     response = json.loads(await websocket.recv())
-                    print(response["data"]["greeting"])
-                    microservices[request_object["data"]["name"]].enter_queue_response(response["data"]["greeting"])
+                    logging.info(response)
+                    microservices[request_object["data"]["name"]].enter_queue_response(response=response["data"]["greeting"], position=microservices[request_object["data"]["name"]].showQueuePosition(uuid=response["uuid"]))
                     await asyncio.sleep(0.5)
             await asyncio.sleep(0.5)
     elif request_object["name"] == microservices[request_object["name"]].name and \

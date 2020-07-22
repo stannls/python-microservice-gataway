@@ -41,6 +41,7 @@ async def hello():
                 while True:
                     response = json.dumps({
                         "code": 200,
+                        "uuid": request["uuid"],
                         "data": {
                             "greeting": "Hello " + request["data"]["user"] + "!" + str(datetime.datetime.now())
                         }
