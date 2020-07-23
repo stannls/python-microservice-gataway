@@ -37,7 +37,7 @@ async def server(websocket, path):
         "endpoint"]:
         logging.debug("New client got registered")
         queueID = microservices[request_object["name"]].append_queue(endpoint=request_object["endpoint"],
-                                                           parameters=request_object["data"])
+                                                           parameters=request_object["data"], queueID=request_object["uuid"])
         while not microservices[request_object["name"]].check_queue_response(position=microservices[request_object["name"]].showQueuePosition(queueID)):
             await asyncio.sleep(0.5)
         logging.debug("Sending client response")
