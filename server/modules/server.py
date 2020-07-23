@@ -27,6 +27,7 @@ async def server(websocket, path):
                             if not microservices[request_object["data"]["name"]].queue[i]["send"]:
                                 await websocket.send(json.dumps(microservices[request_object["data"]["name"]].execute_queue(position=i)))
                                 logging.info("Added client")
+                        queueLen = len(microservices[request_object["data"]["name"]].queue)
                     response = json.loads(await websocket.recv())
                     logging.info(response)
                     microservices[request_object["data"]["name"]].enter_queue_response(response=response["data"]["greeting"], position=microservices[request_object["data"]["name"]].showQueuePosition(uuid=response["uuid"]))
