@@ -12,8 +12,7 @@ class Microservice:
                                                             description=endpoints[i]["description"],
                                                             parameters=endpoints[i]["parameters"])
 
-    def append_queue(self, endpoint, parameters):
-        queueID = uuid.uuid4().hex
+    def append_queue(self, endpoint, parameters, queueID):
         self.queue.append({
             "send": False,
             "uuid": queueID,
