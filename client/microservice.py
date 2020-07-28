@@ -3,12 +3,15 @@ import json
 import time
 import _thread as thread
 import websocket
+import uuid
 
 isConnected = False
 
 
 def on_open(ws):
     register = json.dumps({
+        "uuid": uuid.uuid4().hex,
+        "name": "internal",
         "endpoint": "register",
         "data": {
             "name": "test",

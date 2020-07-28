@@ -1,4 +1,18 @@
-import uuid
+import re
+import json
+
+uuid4hex = re.compile("[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12}", re.I)
+
+
+def structureCheck(request, microservices):
+    try:
+        request = json.loads(request)
+    except json.decoder.JSONDecodeError:
+        return False
+    if "uuid" in request and uuid4hex.match(request["uuid"]) and "name" in request and (request["name"] in microservices or request["name"] == "internal") and "endpoint" in request and (request["endpoint"] == "register" or request["endpoint"] in microservices[request["name"]].endpoints) and "data" in request:
+        return True
+    else:
+        return False
 
 
 class Microservice:
