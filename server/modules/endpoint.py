@@ -83,7 +83,25 @@ class Endpoint:
                                                                description=parameters[i]["description"],
                                                                optional=parameters[i]["optional"],
                                                                type=parameters[i]["type"])
+    def check(self, data):
+        for parameter in self.parameters.items():
+            if not ((parameter[1].name in data or parameter[1].optional) and self.validateType(parameter[1].type, data[parameter[1].name])):
+                return False
+        return True
 
+    def validateType(self, type, var):
+        if type == "string" and isinstance(var, str):
+            return True
+        elif type == "int" and isinstance(var, int):
+            return True
+        elif type == "float" and isinstance(var, float):
+            return True
+        elif type == "bool" and isinstance(var, bool):
+            return True
+        elif type == "dict" and isinstance(var, dict):
+            return True
+        else:
+            return False
 
 class Parameter:
     def __init__(self, name, description, optional, type):
