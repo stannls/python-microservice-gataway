@@ -11,6 +11,7 @@ async def hello():
             "uuid": uuid.uuid4().hex,
             "name": "test",
             "endpoint": "hello",
+            "type": "request",
             "data": {
                 "user": "test"
             }
