@@ -51,7 +51,7 @@ def on_message(ws, message):
                     "type": "response",
                     "uuid": request["uuid"],
                     "data": {
-                        "greeting": "Hello " + request["data"]["user"] + "!" + str(datetime.datetime.now())
+                        "response": "Hello " + request["data"]["user"] + "!" + str(datetime.datetime.now())
                     }
                 })
                 print(response)

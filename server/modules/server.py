@@ -8,7 +8,6 @@ import _thread as thread
 microservices = {}
 
 
-
 def new_client(client, server):
     logging.info("New Client got connected")
 
@@ -24,7 +23,7 @@ def new_message(client, server, message):
                 request_object["uuid"]) is not False:
             logging.info(message)
             microservices[request_object["name"]].enter_queue_response(
-                response=request_object["data"]["greeting"],
+                response=request_object["data"]["response"],
                 position=microservices[request_object["name"]].showQueuePosition(
                     uuid=request_object["uuid"]))
         elif request_object["type"] == "request":
@@ -80,8 +79,6 @@ def new_message(client, server, message):
                                 position=microservices[request_object["name"]].showQueuePosition(queueID))
                             server.send_message(client, resp)
                         time.sleep(0.5)
-                    # microservices[request_object["name"]].delete_queue_entry(position=microservices[request_object[
-                    # "name"]].showQueuePosition(queueID))
                 else:
                     server.send_message(client, json.dumps({"code": 400}))
                     logging.debug("Got bad request")
@@ -89,7 +86,6 @@ def new_message(client, server, message):
                 server.send_message(client, json.dumps({"code": 400}))
                 logging.debug("Got bad request")
         else:
-            print(microservices[request_object["name"]].showQueuePosition(request_object["uuid"]) is not False)
             server.send_message(client, json.dumps({"code": 400}))
             logging.debug("Got bad request")
     else:
