@@ -9,7 +9,7 @@ def structureCheck(request, microservices):
         request = json.loads(request)
     except json.decoder.JSONDecodeError:
         return False
-    if "uuid" in request and uuid4hex.match(request["uuid"]) and "name" in request and (request["name"] in microservices or request["name"] == "internal") and "endpoint" in request and (request["endpoint"] == "register" or request["endpoint"] in microservices[request["name"]].endpoints) and "data" in request:
+    if "uuid" in request and uuid4hex.match(request["uuid"]) and "name" in request and (request["name"] in microservices or request["name"] == "internal") and "endpoint" in request and (request["endpoint"] == "register" or request["endpoint"] in microservices[request["name"]].endpoints) and "data" in request and "type" in request and (request["type"] == "request" or request["type"] == "response"):
         return True
     else:
         return False
@@ -71,6 +71,7 @@ class Microservice:
         for i in range(len(self.queue)):
             if self.queue[i]["uuid"] == uuid:
                 return i
+        return False
 
 
 class Endpoint:

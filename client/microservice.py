@@ -13,6 +13,7 @@ def on_open(ws):
         "uuid": uuid.uuid4().hex,
         "name": "internal",
         "endpoint": "register",
+        "type": "request",
         "data": {
             "name": "test",
             "description": "A test microservice",
@@ -45,9 +46,12 @@ def on_message(ws, message):
             while True:
                 response = json.dumps({
                     "code": 200,
+                    "name": "test",
+                    "endpoint": "hello",
+                    "type": "response",
                     "uuid": request["uuid"],
                     "data": {
-                        "greeting": "Hello " + request["data"]["user"] + "!" + str(datetime.datetime.now())
+                        "response": "Hello " + request["data"]["user"] + "!" + str(datetime.datetime.now())
                     }
                 })
                 print(response)
