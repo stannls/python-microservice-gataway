@@ -32,17 +32,18 @@ def new_message(client, server, message):
                                                                              description=request_object["data"][
                                                                                  "description"],
                                                                              endpoints=request_object["data"][
-                                                                                 "endpoints"])
+                                                                                 "endpoints"],
+                                                                             clientID=client["id"])
                 server.send_message(client, json.dumps({"code": 200, "connected": True}))
                 logging.info("Registered new microservice " + request_object["data"]["name"])
 
                 def run():
-                    while True:
+                    while microservices[request_object["data"]["name"]].lock is False:
                         if microservices[request_object["data"]["name"]].check_queue():
                             queueLen = 0
                             server.send_message(client, json.dumps(
                                 microservices[request_object["data"]["name"]].execute_queue()))
-                            while microservices[request_object["data"]["name"]].check_queue():
+                            while microservices[request_object["data"]["name"]].check_queue() and microservices[request_object["data"]["name"]].lock is False:
                                 if queueLen != len(microservices[request_object["data"]["name"]].queue):
                                     for i in range(len(microservices[request_object["data"]["name"]].queue)):
                                         if not microservices[request_object["data"]["name"]].queue[i]["send"]:
@@ -72,7 +73,7 @@ def new_message(client, server, message):
                     resp = microservices[request_object["name"]].show_queue_response(
                         position=microservices[request_object["name"]].showQueuePosition(queueID))
                     server.send_message(client, resp)
-                    while True:
+                    while microservices[request_object["name"]].lock is False:
                         if microservices[request_object["name"]].show_queue_response(
                                 position=microservices[request_object["name"]].showQueuePosition(queueID)) != resp:
                             resp = microservices[request_object["name"]].show_queue_response(
@@ -92,3 +93,12 @@ def new_message(client, server, message):
         logging.info("Request failed at structure check")
         server.send_message(client, json.dumps({"code": 400}))
         logging.debug("Got bad request")
+
+
+def on_disconnect(client, server):
+    for i in microservices.items():
+        if i[1].clientID == client["id"]:
+            microservices[i[0]].lock = True
+            time.sleep(1)
+            del microservices[i[0]]
+            break

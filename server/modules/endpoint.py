@@ -16,7 +16,9 @@ def structureCheck(request, microservices):
 
 
 class Microservice:
-    def __init__(self, name, description, endpoints):
+    def __init__(self, name, description, endpoints, clientID):
+        self.lock = False
+        self.clientID = clientID
         self.description = description
         self.name = name
         self.queue = []
