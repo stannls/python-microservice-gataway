@@ -1,5 +1,6 @@
 import re
 import json
+import time
 
 uuid4hex = re.compile("[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12}", re.I)
 
@@ -17,6 +18,7 @@ def structureCheck(request, microservices):
 
 class Microservice:
     def __init__(self, name, description, endpoints):
+        self.lock = False
         self.description = description
         self.name = name
         self.queue = []
@@ -28,6 +30,7 @@ class Microservice:
 
     def append_queue(self, endpoint, parameters, queueID):
         self.queue.append({
+            "lock": False,
             "send": False,
             "uuid": queueID,
             "request": {
@@ -48,6 +51,7 @@ class Microservice:
         return {
             "endpoint": self.queue[position]["request"]["endpoint"],
             "uuid": self.queue[position]["uuid"],
+            "type": "request",
             "data": self.queue[position]["request"]["parameters"]
         }
 
