@@ -17,8 +17,9 @@ def structureCheck(request, microservices):
 
 
 class Microservice:
-    def __init__(self, name, description, endpoints):
+    def __init__(self, name, description, endpoints, clientID):
         self.lock = False
+        self.clientID = clientID
         self.description = description
         self.name = name
         self.queue = []
@@ -28,17 +29,8 @@ class Microservice:
                                                             description=endpoints[i]["description"],
                                                             parameters=endpoints[i]["parameters"])
 
-    def append_queue(self, endpoint, parameters, queueID):
-        self.queue.append({
-            "lock": False,
-            "send": False,
-            "uuid": queueID,
-            "request": {
-                "endpoint": endpoint,
-                "parameters": parameters
-            }
-        })
-        return queueID
+    def append_queue(self, request):
+        self.queue.append(request)
 
     def check_queue(self):
         if self.queue:
@@ -47,35 +39,33 @@ class Microservice:
             return False
 
     def execute_queue(self, position=0):
-        self.queue[position]["send"] = True
+        self.queue[position].send = True
         return {
-            "endpoint": self.queue[position]["request"]["endpoint"],
-            "uuid": self.queue[position]["uuid"],
             "type": "request",
-            "data": self.queue[position]["request"]["parameters"]
+            "endpoint": self.queue[position].endpoint,
+            "uuid": self.queue[position].uuid,
+            "data": self.queue[position].data
         }
 
     def enter_queue_response(self, response, position=0):
-        self.queue[position]["response"] = response
+        self.queue[position].response = response
 
     def check_queue_response(self, position):
-        try:
-            self.queue[position]["response"]
-        except KeyError:
+        if self.queue[position].response == "":
             return False
-        return True
+        else:
+            return True
 
     def show_queue_response(self, position):
-        return self.queue[position]["response"]
+        return self.queue[position].response
 
     def delete_queue_entry(self, position):
         self.queue.pop(position)
 
     def showQueuePosition(self, uuid):
         for i in range(len(self.queue)):
-            if self.queue[i]["uuid"] == uuid:
+            if self.queue[i].uuid == uuid:
                 return i
-        return False
 
 
 class Endpoint:
