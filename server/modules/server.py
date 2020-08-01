@@ -1,7 +1,7 @@
 import asyncio
 import json
 import logging
-from modules.endpoint import Microservice, structureCheck
+from server.modules.endpoint import Microservice, structureCheck
 from server.modules.client import Client
 import time
 import _thread as thread
