@@ -10,7 +10,6 @@ microservices = {}
 clients = {}
 
 
-
 def new_client(client, server):
     logging.info("New Client got connected")
 
@@ -39,6 +38,7 @@ def new_message(client, server, message):
                                                                              clientID=client["id"])
                 server.send_message(client, json.dumps({"code": 200, "connected": True}))
                 logging.info("Registered new microservice " + request_object["data"]["name"])
+
                 def run():
                     while microservices[request_object["data"]["name"]].lock is False:
                         if microservices[request_object["data"]["name"]].check_queue():
@@ -81,7 +81,8 @@ def new_message(client, server, message):
                     microservices[request_object["name"]].append_queue(
                         clients[client["id"]].requests[request_object["uuid"]])
                     while not microservices[request_object["name"]].check_queue_response(
-                            microservices[request_object["name"]].showQueuePosition(request_object["uuid"])) and clients[client["id"]].alive:
+                            microservices[request_object["name"]].showQueuePosition(request_object["uuid"])) and \
+                            clients[client["id"]].alive:
                         time.sleep(0.5)
                     logging.debug("Sending client response")
                     resp = microservices[request_object["name"]].show_queue_response(
@@ -117,6 +118,7 @@ def new_message(client, server, message):
         logging.info("Request failed at structure check")
         server.send_message(client, json.dumps({"code": 400}))
         logging.debug("Got bad request")
+
 
 def on_disconnect(client, server):
     for i in microservices.items():
