@@ -2,10 +2,12 @@ import asyncio
 import json
 import logging
 from modules.endpoint import Microservice, structureCheck
+from server.modules.client import Client
 import time
 import _thread as thread
 
 microservices = {}
+clients = {}
 
 
 def new_client(client, server):
@@ -43,16 +45,26 @@ def new_message(client, server, message):
                             queueLen = 0
                             server.send_message(client, json.dumps(
                                 microservices[request_object["data"]["name"]].execute_queue()))
-                            while microservices[request_object["data"]["name"]].check_queue() and microservices[request_object["data"]["name"]].lock is False:
+                            while microservices[request_object["data"]["name"]].check_queue() and microservices[
+                                request_object["data"]["name"]].lock is False:
                                 if queueLen != len(microservices[request_object["data"]["name"]].queue):
                                     for i in range(len(microservices[request_object["data"]["name"]].queue)):
-                                        if not microservices[request_object["data"]["name"]].queue[i]["send"]:
+                                        if microservices[request_object["data"]["name"]].check_queue_response(
+                                                i) is False:
                                             server.send_message(client, json.dumps(
                                                 microservices[request_object["data"]["name"]].execute_queue(
                                                     position=i)))
                                             logging.info("Added client")
                                     queueLen = len(microservices[request_object["data"]["name"]].queue)
-
+                                for i in range(len(microservices[request_object["data"]["name"]].queue)):
+                                    if microservices[request_object["data"]["name"]].queue[i].lock:
+                                        server.send_message(client, json.dumps({
+                                            "name": request_object["data"]["name"],
+                                            "endpoint": microservices[request_object["data"]["name"]].queue[i].endpoint,
+                                            "type": "deletion",
+                                            "uuid": microservices[request_object["data"]["name"]].queue[i].uuid
+                                        }))
+                                        microservices[request_object["data"]["name"]].delete_queue_entry(position=i)
                                 time.sleep(0.5)
                         time.sleep(0.5)
 
@@ -63,22 +75,35 @@ def new_message(client, server, message):
                 logging.debug("New client got registered")
                 if microservices[request_object["name"]].endpoints[request_object["endpoint"]].check(
                         request_object["data"]):
-                    queueID = microservices[request_object["name"]].append_queue(endpoint=request_object["endpoint"],
-                                                                                 parameters=request_object["data"],
-                                                                                 queueID=request_object["uuid"])
+                    if not client["id"] in client:
+                        clients[client["id"]] = Client(id=client["id"])
+                    clients[client["id"]].newRequest(request_object["uuid"], request_object["name"],
+                                                     request_object["endpoint"], request_object["data"])
+                    microservices[request_object["name"]].append_queue(
+                        clients[client["id"]].requests[request_object["uuid"]])
                     while not microservices[request_object["name"]].check_queue_response(
-                            position=microservices[request_object["name"]].showQueuePosition(queueID)):
+                            microservices[request_object["name"]].showQueuePosition(request_object["uuid"])) and clients[client["id"]].alive:
                         time.sleep(0.5)
                     logging.debug("Sending client response")
                     resp = microservices[request_object["name"]].show_queue_response(
-                        position=microservices[request_object["name"]].showQueuePosition(queueID))
+                        position=microservices[request_object["name"]].showQueuePosition(request_object["uuid"]))
                     server.send_message(client, resp)
-                    while microservices[request_object["name"]].lock is False:
+                    while microservices[request_object["name"]].lock is False and clients[client["id"]].alive:
                         if microservices[request_object["name"]].show_queue_response(
-                                position=microservices[request_object["name"]].showQueuePosition(queueID)) != resp:
+                                position=microservices[request_object["name"]].showQueuePosition(
+                                    request_object["uuid"])) != resp:
                             resp = microservices[request_object["name"]].show_queue_response(
-                                position=microservices[request_object["name"]].showQueuePosition(queueID))
-                            server.send_message(client, resp)
+                                position=microservices[request_object["name"]].showQueuePosition(
+                                    request_object["uuid"]))
+                            try:
+                                server.send_message(client, resp)
+                            except BrokenPipeError:
+                                clients[client["id"]].alive = False
+                                clients[client["id"]].die()
+                                print("DISCONNECT")
+                                time.sleep(2)
+                                del clients[client["id"]]
+                                break
                         time.sleep(0.5)
                 else:
                     server.send_message(client, json.dumps({"code": 400}))
@@ -102,3 +127,6 @@ def on_disconnect(client, server):
             time.sleep(1)
             del microservices[i[0]]
             break
+    for i in clients.items():
+        if i[1].id == client["id"]:
+            clients[i[0]].alive = False
