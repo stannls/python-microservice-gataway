@@ -47,34 +47,7 @@ def new_message(client, server, message):
                     if not client["id"] in client:
                         clients[client["id"]] = Client(id=client["id"])
                     clients[client["id"]].newRequest(request_object["uuid"], request_object["name"],
-                                                     request_object["endpoint"], request_object["data"])
-                    Internal.microservices[request_object["name"]]["microservice"].append_queue(
-                        clients[client["id"]].requests[request_object["uuid"]])
-                    while not Internal.microservices[request_object["name"]]["microservice"].check_queue_response(
-                            Internal.microservices[request_object["name"]]["microservice"].showQueuePosition(request_object["uuid"])) and \
-                            clients[client["id"]].alive:
-                        time.sleep(0.5)
-                    logging.debug("Sending client response")
-                    resp = Internal.microservices[request_object["name"]]["microservice"].show_queue_response(
-                        position=Internal.microservices[request_object["name"]]["microservice"].showQueuePosition(request_object["uuid"]))
-                    server.send_message(client, resp)
-                    while Internal.microservices[request_object["name"]]["microservice"].lock is False and clients[client["id"]].alive:
-                        if Internal.microservices[request_object["name"]]["microservice"].show_queue_response(
-                                position=Internal.microservices[request_object["name"]]["microservice"].showQueuePosition(
-                                    request_object["uuid"])) != resp:
-                            resp = Internal.microservices[request_object["name"]]["microservice"].show_queue_response(
-                                position=Internal.microservices[request_object["name"]]["microservice"].showQueuePosition(
-                                    request_object["uuid"]))
-                            try:
-                                server.send_message(client, resp)
-                            except BrokenPipeError:
-                                clients[client["id"]].alive = False
-                                clients[client["id"]].die()
-                                print("DISCONNECT")
-                                time.sleep(2)
-                                del clients[client["id"]]
-                                break
-                        time.sleep(0.5)
+                                                     request_object["endpoint"], request_object["data"], client, server, request_object, Internal)
                 else:
                     server.send_message(client, json.dumps({"code": 400}))
                     logging.debug("Got bad request")
@@ -98,5 +71,12 @@ def on_disconnect(client, server):
             del Internal.microservices[i[0]]
             break
     for i in clients.items():
-        if i[1].id == client["id"]:
+        print(i[0])
+        print(client["id"])
+        if i[0] == client["id"]:
+            print("Passed client disconnect check")
             clients[i[0]].alive = False
+            clients[i[0]].die()
+            time.sleep(2)
+            del clients[i[0]]
+            break

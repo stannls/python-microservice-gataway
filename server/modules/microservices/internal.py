@@ -25,8 +25,7 @@ class internal:
                 print(server, client)
                 server.send_message(client, json.dumps(
                     self.microservices[microservice]["microservice"].execute_queue()))
-                while self.microservices[microservice]["microservice"].check_queue() and self.microservices[
-                    microservice].microservice.lock is False:
+                while self.microservices[microservice]["microservice"].check_queue() and self.microservices[microservice]["microservice"].lock is False:
                     if queueLen != len(self.microservices[microservice]["microservice"].queue):
                         for i in range(len(self.microservices[microservice]["microservice"].queue)):
                             if self.microservices[microservice]["microservice"].check_queue_response(
