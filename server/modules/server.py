@@ -36,7 +36,7 @@ def new_message(client, server, message):
                                                                                  "description"],
                                                                              endpoints=request_object["data"][
                                                                                  "endpoints"],
-                                                                             clientID=client["id"]
+                                                                             clientID=client["id"])
                 server.send_message(client, json.dumps({"code": 200, "connected": True}))
                 logging.info("Registered new microservice " + request_object["data"]["name"])
                 def run():
@@ -66,18 +66,6 @@ def new_message(client, server, message):
                                         }))
                                         microservices[request_object["data"]["name"]].delete_queue_entry(position=i)
                                 time.sleep(0.5)
-                                for i in client_Connections.items():
-                                    if i[1]["connected"] is False:
-                                        logging.info("Sending deletion")
-                                        server.send_message(client, json.dumps({
-                                            "code": 200,
-                                            "name": request_object["data"]["name"],
-                                            "endpoint": microservices[request_object["data"]["name"]].queue[microservices[request_object["data"]["name"]].showQueuePosition(i[1]["uuid"])]["request"]["endpoint"],
-                                            "type": "deletion",
-                                            "uuid": i[1]["uuid"]
-                                        }))
-                                        del microservices[request_object["data"]["name"]].queue[microservices[request_object["data"]["name"]].showQueuePosition(i[1]["uuid"])]
-                        time.sleep(0.5)
 
                 thread.start_new_thread(run, ())
             elif request_object["name"] == microservices[request_object["name"]].name and \
