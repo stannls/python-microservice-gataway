@@ -1,7 +1,7 @@
 import asyncio
 import json
 import logging
-from server.modules.endpoint import Microservice, structureCheck
+from server.modules.endpoint import Microservice
 from server.modules.client import Client
 from server.modules.microservices.internal import internal
 import time
@@ -18,8 +18,7 @@ def new_message(client, server, message):
     logging.info("Got new message")
     logging.debug("Handling request...")
     logging.debug("Request content: " + message)
-    # Placeholder
-    if structureCheck(message):
+    if Internal.structureCheck(message):
         logging.info("Request passed structure check")
         request_object = json.loads(message)
         if request_object["type"] == "response" and Internal.microservices[request_object["name"]]["microservice"].showQueuePosition(

@@ -5,18 +5,6 @@ import time
 uuid4hex = re.compile("[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12}", re.I)
 
 
-def structureCheck(request):
-    # TODO: Refactor this check
- #   try:
-  #      request = json.loads(request)
-   # except json.decoder.JSONDecodeError:
-    #    return False
-    #if "uuid" in request and uuid4hex.match(request["uuid"]) and "name" in request and (request["name"] in microservices or request["name"] == "internal") and "endpoint" in request and (request["endpoint"] == "register" or request["endpoint"] in microservices[request["name"]].endpoints) and "data" in request and "type" in request and (request["type"] == "request" or request["type"] == "response"):
-    return True
-    #else:
-     #   return False
-
-
 class Microservice:
     def __init__(self, name, description, endpoints, clientID):
         self.lock = False
@@ -79,9 +67,11 @@ class Endpoint:
                                                                description=parameters[i]["description"],
                                                                optional=parameters[i]["optional"],
                                                                type=parameters[i]["type"])
+
     def check(self, data):
         for parameter in self.parameters.items():
-            if not ((parameter[1].name in data or parameter[1].optional) and self.validateType(parameter[1].type, data[parameter[1].name])):
+            if not ((parameter[1].name in data or parameter[1].optional) and self.validateType(parameter[1].type, data[
+                parameter[1].name])):
                 return False
         return True
 
@@ -98,6 +88,7 @@ class Endpoint:
             return True
         else:
             return False
+
 
 class Parameter:
     def __init__(self, name, description, optional, type):

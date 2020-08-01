@@ -2,6 +2,9 @@ import time
 import json
 import logging
 import threading
+import re
+
+uuid4hex = re.compile("[a-f0-9]{8}-?[a-f0-9]{4}-?4[a-f0-9]{3}-?[89ab][a-f0-9]{3}-?[a-f0-9]{12}", re.I)
 
 
 class internal:
@@ -43,3 +46,17 @@ class internal:
                             }))
                             self.microservices[microservice]["microservice"].delete_queue_entry(position=i)
                     time.sleep(0.5)
+
+    def structureCheck(self, request):
+        try:
+            request = json.loads(request)
+        except json.decoder.JSONDecodeError:
+            return False
+        if "uuid" in request and uuid4hex.match(request["uuid"]) and "name" in request and (
+                request["name"] in self.microservices or request["name"] == "internal") and "endpoint" in request and (
+                request["endpoint"] == "register" or request["endpoint"] in self.microservices[
+            request["name"]]["microservice"].endpoints) and "data" in request and "type" in request and (
+                request["type"] == "request" or request["type"] == "response"):
+            return True
+        else:
+            return False
