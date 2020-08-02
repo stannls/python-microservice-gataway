@@ -44,7 +44,6 @@ class internal:
                                 "uuid": self.microservices[microservice]["microservice"].queue[i].uuid
                             }))
                             self.microservices[microservice]["microservice"].delete_queue_entry(position=i)
-                    time.sleep(0.5)
 
     def structureCheck(self, request):
         try:
