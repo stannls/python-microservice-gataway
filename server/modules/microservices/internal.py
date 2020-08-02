@@ -25,14 +25,17 @@ class internal:
                 print(server, client)
                 server.send_message(client, json.dumps(
                     self.microservices[microservice]["microservice"].execute_queue()))
-                while self.microservices[microservice]["microservice"].check_queue() and self.microservices[microservice]["microservice"].lock is False:
+                self.microservices[microservice]["microservice"].queue[0].isSend = True
+                while self.microservices[microservice]["microservice"].check_queue() and \
+                        self.microservices[microservice]["microservice"].lock is False:
                     if queueLen != len(self.microservices[microservice]["microservice"].queue):
                         for i in range(len(self.microservices[microservice]["microservice"].queue)):
                             if self.microservices[microservice]["microservice"].check_queue_response(
-                                    i) is False:
+                                    i) is False and self.microservices[microservice]["microservice"].queue[i].isSend is False:
                                 server.send_message(client, json.dumps(
                                     self.microservices[microservice]["microservice"].execute_queue(
                                         position=i)))
+                                self.microservices[microservice]["microservice"].queue[i].isSend = True
                                 logging.info("Added client")
                         queueLen = len(self.microservices[microservice]["microservice"].queue)
                     for i in range(len(self.microservices[microservice]["microservice"].queue)):

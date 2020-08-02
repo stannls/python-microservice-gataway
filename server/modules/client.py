@@ -56,4 +56,5 @@ class Request:
         self.microservice = microservice
         self.uuid = uuid
         self.lock = False
+        self.isSend = False
         self.response = ""
