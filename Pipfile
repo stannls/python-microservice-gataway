@@ -6,7 +6,6 @@ verify_ssl = true
 [dev-packages]
 
 [packages]
-websockets = "*"
 websocket-server = "*"
 websocket_client = "*"
 pyyaml = "*"

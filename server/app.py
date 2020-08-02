@@ -1,6 +1,4 @@
-import asyncio
 import logging
-import websockets
 from server.modules.server import new_client, new_message, on_disconnect
 import yaml
 from websocket_server import WebsocketServer

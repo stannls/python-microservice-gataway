@@ -1,11 +1,9 @@
-import asyncio
 import json
 import logging
 from server.modules.endpoint import Microservice
 from server.modules.client import Client
 from server.modules.microservices.internal import internal
 import time
-import _thread as thread
 
 clients = {}
 Internal = internal()
