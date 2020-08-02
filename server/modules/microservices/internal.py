@@ -55,7 +55,7 @@ class internal:
                 request["name"] in self.microservices or request["name"] == "internal") and "endpoint" in request and (
                 request["endpoint"] == "register" or request["endpoint"] in self.microservices[
             request["name"]]["microservice"].endpoints) and "data" in request and "type" in request and (
-                request["type"] == "request" or request["type"] == "response"):
+                request["type"] == "request" or request["type"] == "response" or type == "deletion"):
             return True
         else:
             return False

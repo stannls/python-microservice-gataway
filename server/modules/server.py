@@ -57,6 +57,10 @@ def new_message(client, server, message):
                     request_error.bad_request(client, server, "No valid endpoint were given")
             else:
                 request_error.bad_request(client, server, "No valid microservice were given")
+        elif request_object["type"] == "deletion":
+            clients[client["id"]].requests[request_object["uuid"]].lock = True
+            time.sleep(1)
+            del clients[client["id"]].requests[request_object["uuid"]]
         else:
             request_error.bad_request(client, server, "Request has no valid type")
     else:
