@@ -37,16 +37,7 @@ class Client:
                 resp = microservice.microservices[request["name"]]["microservice"].show_queue_response(
                     position=microservice.microservices[request["name"]]["microservice"].showQueuePosition(
                         request["uuid"]))
-                try:
-                    server.send_message(client, resp)
-                except BrokenPipeError:
-                    # TODO Reimplement killing
-                    self.alive = False
-                    self.die()
-                    print("DISCONNECT")
-                    time.sleep(2)
-                    del self
-                    break
+                server.send_message(client, resp)
 
 
 class Request:
