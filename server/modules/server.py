@@ -75,10 +75,7 @@ def on_disconnect(client, server):
             del Internal.microservices[i[0]]
             break
     for i in clients.items():
-        print(i[0])
-        print(client["id"])
         if i[0] == client["id"]:
-            print("Passed client disconnect check")
             clients[i[0]].alive = False
             clients[i[0]].die()
             time.sleep(2)
