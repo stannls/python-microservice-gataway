@@ -1,5 +1,5 @@
 import logging
-from server.modules.server import new_client, new_message, on_disconnect
+from server.microservice_server import new_client, new_message, on_disconnect
 import yaml
 from websocket_server import WebsocketServer
 

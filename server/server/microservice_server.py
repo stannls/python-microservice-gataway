@@ -1,9 +1,9 @@
 import json
 import logging
-from server.modules.microservice import Microservice
-from server.modules.client import Client
-from server.modules.microservices.internal import internal
-from server.modules.request_error.request_error import request_error
+from client.microservice import Microservice
+from client.client import Client
+from microservices.internal import internal
+from request_error.request_error import request_error
 import time
 
 clients = {}
