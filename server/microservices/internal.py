@@ -15,8 +15,11 @@ class internal:
         self.microservices[microservice.name] = {"internal": internal, "microservice": microservice}
 
     def run(self, server, client, microservice, clients):
-        thread = threading.Thread(target=self._runloop, args=(client, server, microservice, clients))
-        thread.start()
+        if self.microservices[microservice]["internal"] is False:
+            thread = threading.Thread(target=self._runloop, args=(client, server, microservice, clients))
+            thread.start()
+        else:
+            self.microservices[microservice].run()
 
     def _runloop(self, client, server, microservice, clients):
         while self.microservices[microservice]["microservice"].lock is False:
