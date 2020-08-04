@@ -1,9 +1,10 @@
 FROM alpine:latest
 MAINTAINER Yannis Storrer "yannis.storrer@web.de"
-RUN apk update && apk upgrade && apk add --update python3 py-pip
-COPY requirements.txt /server/requirements.txt
-WORKDIR /server
-RUN python3 -m pip install -r requirements.txt
+RUN apk update && apk upgrade && apk add --update-cache python3 py-pip
 COPY . /server
-ENTRYPOINT [ "python3" ]
+WORKDIR /server
+RUN pwd && ls
+RUN pip install --ignore-installed pipenv
+RUN pipenv install --system --deploy
+ENTRYPOINT ["python3"]
 CMD [ "app.py" ]
