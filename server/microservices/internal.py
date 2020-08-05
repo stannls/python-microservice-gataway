@@ -14,12 +14,12 @@ class internal:
     def register(self, microservice, internal=False):
         self.microservices[microservice.name] = {"internal": internal, "microservice": microservice}
 
-    def run(self, server, client, microservice, clients):
-        if self.microservices[microservice]["internal"] is False:
+    def run(self, microservice, clients, server=None, client=None):
+        if self.microservices[microservice.name]["internal"] is False:
             thread = threading.Thread(target=self._runloop, args=(client, server, microservice, clients))
             thread.start()
         else:
-            self.microservices[microservice].run()
+            self.microservices[microservice.name]["microservice"].run()
 
     def _runloop(self, client, server, microservice, clients):
         while self.microservices[microservice]["microservice"].lock is False:
@@ -33,7 +33,8 @@ class internal:
                     if queueLen != len(self.microservices[microservice]["microservice"].queue):
                         for i in range(len(self.microservices[microservice]["microservice"].queue)):
                             if self.microservices[microservice]["microservice"].check_queue_response(
-                                    i) is False and self.microservices[microservice]["microservice"].queue[i].isSend is False:
+                                    i) is False and self.microservices[microservice]["microservice"].queue[
+                                i].isSend is False:
                                 server.send_message(client, json.dumps(
                                     self.microservices[microservice]["microservice"].execute_queue(
                                         position=i)))
@@ -51,15 +52,16 @@ class internal:
                             self.microservices[microservice]["microservice"].delete_queue_entry(position=i)
 
     def structureCheck(self, request):
-        try:
-            request = json.loads(request)
-        except json.decoder.JSONDecodeError:
-            return False
-        if "uuid" in request and uuid4hex.match(request["uuid"]) and "name" in request and (
-                request["name"] in self.microservices or request["name"] == "internal") and "endpoint" in request and (
-                request["endpoint"] == "register" or request["endpoint"] in self.microservices[
-            request["name"]]["microservice"].endpoints) and "data" in request and "type" in request and (
-                request["type"] == "request" or request["type"] == "response" or type == "deletion"):
-            return True
-        else:
-            return False
+        # try:
+        #   request = json.loads(request)
+        # except json.decoder.JSONDecodeError:
+        #    return False
+        # if "uuid" in request and uuid4hex.match(request["uuid"]) and "name" in request and (
+        #       request["name"] in self.microservices or request["name"] == "internal") and "endpoint" in request and (
+        #      request["endpoint"] == "register" or request["endpoint"] in self.microservices[
+        #  request["name"]]["microservice"].endpoints) and "data" in request and "type" in request and (
+        #      request["type"] == "request" or request["type"] == "response" or type == "deletion"):
+        #  return True
+        # else:
+        #    return False
+        return True

@@ -24,6 +24,7 @@ class Client:
                 microservice.microservices[request["name"]]["microservice"].showQueuePosition(
                     request["uuid"])) and \
                 self.alive:
+            #print(not microservice.microservices[request["name"]]["microservice"].check_queue_response(
             time.sleep(0)
         logging.debug("Sending client response")
         resp = microservice.microservices[request["name"]]["microservice"].show_queue_response(

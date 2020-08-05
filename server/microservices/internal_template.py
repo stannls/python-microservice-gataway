@@ -1,25 +1,26 @@
-from ..client.microservice import Microservice
-from ..server.microservice_server import new_message
+from client.microservice import Microservice
 import threading
 import json
 import logging
 
 
 class internal_Template(Microservice):
-    def __init__(self, name, description, endpoints, endpointFuncs, server, client):
-        Microservice.__init__(name, description, endpoints, clientID=0)
-        self.client = client
-        self.server = server
+    def __init__(self, name, description, endpoints, endpointFuncs):
+        super().__init__(name=name, description=description, endpoints=endpoints, clientID=0)
         self.endpointFuncs = endpointFuncs
 
     def receiveRequest(self, request):
-        self.endpointFuncs[request["endpoint"]](data=request["data"])
-
-    def returnDummyResponse(self, response):
-        new_message(self.client, self.server, response)
+        request = json.loads(request)
+        args = json.dumps(request)
+        print(args)
+        print(self.endpointFuncs[request["endpoint"]])
+        thread = threading.Thread(target=self.endpointFuncs[request["endpoint"]]["function"], args=(args,))
+        thread.start()
 
     def run(self):
-        thread = threading.Thread(target=self._runloop(), args=())
+        print("test")
+        thread = threading.Thread(target=self._runloop, args=())
+        thread.start()
 
     def _runloop(self):
         while True:

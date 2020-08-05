@@ -4,14 +4,18 @@ from client.microservice import Microservice
 from client.client import Client
 from microservices.internal import internal
 from request_error.request_error import request_error
+from microservices.test import test
 import time
 
 clients = {}
 Internal = internal()
-
+test_ms = test()
+Internal.register(microservice=test_ms, internal=True)
+Internal.run(test_ms, clients)
 
 def new_client(client, server):
     logging.info("New Client got connected")
+    print(client, server)
 
 
 def new_message(client, server, message):
@@ -39,22 +43,17 @@ def new_message(client, server, message):
                 Internal.register(microservice=microservice, internal=False)
                 server.send_message(client, json.dumps({"code": 200, "connected": True}))
                 logging.info("Registered new microservice " + request_object["data"]["name"])
-                Internal.run(server, client, request_object["data"]["name"], clients)
+                Internal.run(request_object["data"]["name"], clients, server, client)
             elif request_object["name"] in Internal.microservices and \
                     Internal.microservices[request_object["name"]]["microservice"].endpoints[
                         request_object["endpoint"]].name == request_object[
-                "endpoint"]:
+                "endpoint"] and Internal.microservices[request_object["name"]]["microservice"].internal is False:
                 logging.debug("New client got registered")
-                if Internal.microservices[request_object["name"]]["microservice"].endpoints[
-                    request_object["endpoint"]].check(
-                    request_object["data"]):
-                    if not client["id"] in client:
-                        clients[client["id"]] = Client(id=client["id"])
-                    clients[client["id"]].newRequest(request_object["uuid"], request_object["name"],
-                                                     request_object["endpoint"], request_object["data"], client, server,
-                                                     request_object, Internal)
-                else:
-                    request_error.bad_request(client, server, "No valid endpoint were given")
+                if not client["id"] in client:
+                    clients[client["id"]] = Client(id=client["id"])
+                clients[client["id"]].newRequest(request_object["uuid"], request_object["name"],
+                                                 request_object["endpoint"], request_object["data"], client, server,
+                                                 request_object, Internal)
             else:
                 request_error.bad_request(client, server, "No valid microservice were given")
         elif request_object["type"] == "deletion":
