@@ -18,7 +18,6 @@ class internal_Template(Microservice):
         thread.start()
 
     def run(self):
-        print("test")
         thread = threading.Thread(target=self._runloop, args=())
         thread.start()
 

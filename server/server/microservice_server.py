@@ -4,18 +4,14 @@ from client.microservice import Microservice
 from client.client import Client
 from microservices.internal import internal
 from request_error.request_error import request_error
-from microservices.test import test
 import time
 
 clients = {}
 Internal = internal()
-test_ms = test()
-Internal.register(microservice=test_ms, internal=True)
-Internal.run(test_ms, clients)
+
 
 def new_client(client, server):
     logging.info("New Client got connected")
-    print(client, server)
 
 
 def new_message(client, server, message):
@@ -35,15 +31,16 @@ def new_message(client, server, message):
                 position=Internal.microservices[request_object["name"]]["microservice"].showQueuePosition(
                     uuid=request_object["uuid"]))
         elif request_object["type"] == "request":
-            if request_object["name"] == "internal" and request_object["endpoint"] == "register":
+            if request_object["name"] == "internal" and request_object[
+                "endpoint"] == "register" and Internal.registerCheck(request_object):
                 microservice = Microservice(name=request_object["data"]["name"],
                                             description=request_object["data"]["description"],
                                             endpoints=request_object["data"]["endpoints"],
                                             clientID=client["id"])
-                Internal.register(microservice=microservice, internal=False)
+                Internal.register(microservice=microservice, is_internal=False)
                 server.send_message(client, json.dumps({"code": 200, "connected": True}))
                 logging.info("Registered new microservice " + request_object["data"]["name"])
-                Internal.run(request_object["data"]["name"], clients, server, client)
+                Internal.run(microservice, clients, server, client)
             elif request_object["name"] in Internal.microservices and \
                     Internal.microservices[request_object["name"]]["microservice"].endpoints[
                         request_object["endpoint"]].name == request_object[

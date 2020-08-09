@@ -12,6 +12,7 @@ class Client:
     def newRequest(self, uuid, microservice, endpoint, data, client, server, request, microservice_object):
         self.requests[uuid] = Request(uuid, microservice, endpoint, data)
         thread = threading.Thread(target=self._run_new_Request, args=(client, server, request, microservice_object))
+        thread.daemon = True
         thread.start()
 
     def die(self):
@@ -24,7 +25,6 @@ class Client:
                 microservice.microservices[request["name"]]["microservice"].showQueuePosition(
                     request["uuid"])) and \
                 self.alive:
-            #print(not microservice.microservices[request["name"]]["microservice"].check_queue_response(
             time.sleep(0)
         logging.debug("Sending client response")
         resp = microservice.microservices[request["name"]]["microservice"].show_queue_response(
